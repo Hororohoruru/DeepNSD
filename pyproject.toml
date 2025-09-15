@@ -15,7 +15,7 @@ authors = [
 version = "0.1"
 
 [tool.setuptools.packages.find]
-where = ["source_code"]
+where = ["neural_data"]
 
 [tool.setuptools.dynamic]
 readme = {file = "README.md", content-type = "text/markdown"}
