@@ -142,3 +142,7 @@ venv.bak/
 # R Files
 **/*.Rproj
 .Rproj.user
+
+# Downloaded files with data
+neural_data/natural_scenes_demo/*
+neural_data/._natural_scenes_demo
