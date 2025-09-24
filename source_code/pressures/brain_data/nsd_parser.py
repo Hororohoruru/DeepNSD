@@ -551,13 +551,15 @@ def load_NSD_brain_data(
             allses_export_betas_stacked = np.float32(np.hstack(allses_export_betas))
 
             brain_data_df = pd.DataFrame(data=allses_export_betas_stacked)
-            from IPython import embed
-
-            embed()
 
             brain_data_df.index = voxel_metadata[roi_group][subj][
                 "all_included_indices"
             ]
+
+            from IPython import embed
+
+            embed()
+
             brain_data_df.columns = np.array(annotations[subj].index)[
                 : brain_data_df.shape[1]
             ]
