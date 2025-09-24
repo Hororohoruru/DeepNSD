@@ -551,7 +551,7 @@ def load_NSD_brain_data(
             allses_export_betas_stacked = np.float32(np.hstack(allses_export_betas))
 
             brain_data_df = pd.DataFrame(data=allses_export_betas_stacked)
-            from Ipython import embed
+            from IPython import embed
 
             embed()
 
