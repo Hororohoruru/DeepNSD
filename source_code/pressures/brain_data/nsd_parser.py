@@ -556,10 +556,6 @@ def load_NSD_brain_data(
                 "all_included_indices"
             ]
 
-            from IPython import embed
-
-            embed()
-
             brain_data_df.columns = np.array(annotations[subj].index)[
                 : brain_data_df.shape[1]
             ]
