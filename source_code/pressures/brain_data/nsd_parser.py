@@ -281,8 +281,8 @@ def load_NSD_voxel_metadata(
             savefile = join(savedir, f"{subj}_{space}_{roi_group}_voxel_meta_df.npy")
             savefile_exists = exists(savefile)
 
-            if not savefile_exists:
-                makedirs(savefile, exist_ok=True)
+            if not exists(savedir):
+                makedirs(savedir, exist_ok=True)
 
         if savefile_exists and not overwrite:
 
