@@ -62,7 +62,7 @@ def _nsd_path_prompt():
 
 
 BASE_CFG = join(dirname(__file__), "_config.yml")
-NSD_PATH = get_nsd_path(BASE_CFG, "NSD_PATH")
+NSD_PATH = get_nsd_path(None, "NSD_PATH")
 
 if NSD_PATH is None:
     NSD_PATH = _nsd_path_prompt()
