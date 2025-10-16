@@ -10,6 +10,7 @@ from sklearn.base import RegressorMixin, MultiOutputMixin, is_classifier
 from sklearn.linear_model._ridge import safe_sparse_dot, _RidgeGCV, _BaseRidgeCV
 from sklearn.linear_model._ridge import _rescale_data, _preprocess_data
 from sklearn.linear_model._ridge import _check_gcv_mode, _check_sample_weight
+from sklearn.utils.validation import validate_data
 
 from scipy.stats import pearsonr
 from sklearn.metrics import explained_variance_score
@@ -45,14 +46,14 @@ class _RidgeGCVMod(_RidgeGCV):
         self.scoring = scoring
         self.copy_X = copy_X
         self.gcv_mode = gcv_mode
-        self.store_cv_values = store_cv_results
+        self.store_cv_results = store_cv_results
         self.is_clf = is_clf
         self.alpha_per_target = alpha_per_target
 
     def fit(self, X, y, sample_weight=None):
         _normalize = False
 
-        X, y = self._validate_data(
+        X, y = validate_data(
             X,
             y,
             accept_sparse=["csr", "csc", "coo"],
@@ -115,16 +116,16 @@ class _RidgeGCVMod(_RidgeGCV):
         n_y = 1 if len(y.shape) == 1 else y.shape[1]
         n_alphas = 1 if np.ndim(self.alphas) == 0 else len(self.alphas)
 
-        if self.store_cv_values:
-            self.cv_values_ = np.empty((n_samples * n_y, n_alphas), dtype=X.dtype)
+        if self.store_cv_results:
+            self.cv_results_ = np.empty((n_samples * n_y, n_alphas), dtype=X.dtype)
 
         best_coef, best_score, best_alpha = None, None, None
 
         for i, alpha in enumerate(np.atleast_1d(self.alphas)):
             G_inverse_diag, c = solve(float(alpha), y, sqrt_sw, X_mean, *decomposition)
             predictions = y - (c / G_inverse_diag)
-            if self.store_cv_values:
-                self.cv_values_[:, i] = predictions.ravel()
+            if self.store_cv_results:
+                self.cv_results_[:, i] = predictions.ravel()
 
             # identity_estimator = _IdentityRegressor()
             if self.alpha_per_target:
@@ -169,12 +170,12 @@ class _RidgeGCVMod(_RidgeGCV):
         X_offset += X_mean * X_scale
         self._set_intercept(X_offset, y_offset, X_scale)
 
-        if self.store_cv_values:
+        if self.store_cv_results:
             if len(y.shape) == 1:
-                cv_values_shape = n_samples, n_alphas
+                cv_results_shape = n_samples, n_alphas
             else:
-                cv_values_shape = n_samples, n_y, n_alphas
-            self.cv_values_ = self.cv_values_.reshape(cv_values_shape)
+                cv_results_shape = n_samples, n_y, n_alphas
+            self.cv_results_ = self.cv_results_.reshape(cv_results_shape)
 
         return self
 
@@ -197,11 +198,11 @@ class _BaseRidgeCVMod(_BaseRidgeCV):
             self.alpha_ = estimator.alpha_
             self.best_score_ = estimator.best_score_
             if self.store_cv_results:
-                self.cv_results_ = estimator.cv_values_
+                self.cv_results_ = estimator.cv_results_
         else:
             if self.store_cv_results:
                 raise ValueError(
-                    "cv is not None and store_cv_values=True are incompatible"
+                    "cv is not None and store_cv_results=True are incompatible"
                 )
             if self.alpha_per_target:
                 raise ValueError(
