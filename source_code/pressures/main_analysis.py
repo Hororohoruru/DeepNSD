@@ -8,8 +8,10 @@ import os, sys, argparse
 from .model_opts import *
 from .brain_data import *
 
-from .ridge_gcv_mod import RidgeCVMod
+from .ridge_gcv_mod import RidgeCVMod, pearson_r_score
 from sklearn import preprocessing
+from sklearn.linear_model import RidgeCV
+from sklearn.metrics import make_scorer
 
 
 def get_splithalf_xy(feature_map, response_data, scale=True):
@@ -93,11 +95,11 @@ def run_benchmarking(
     ):
         xy = get_splithalf_xy(feature_maps_redux[model_layer], benchmark.response_data)
 
-        regression = RidgeCVMod(
+        regression = RidgeCV(
             alphas=alpha_values,
             store_cv_results=True,
             alpha_per_target=True,
-            scoring="pearson_r",
+            scoring=make_scorer(pearson_r_score),
         )
 
         regression.fit(xy["train"]["X"], xy["train"]["y"].transpose())
