@@ -1,4 +1,4 @@
-#modified from: github.com/scikit-learn/scikit-learn/blob/main/sklearn/linear_model/_ridge.py
+# modified from: github.com/scikit-learn/scikit-learn/blob/main/sklearn/linear_model/_ridge.py
 
 import numpy as np
 from scipy import sparse
@@ -14,36 +14,38 @@ from sklearn.linear_model._ridge import _check_gcv_mode, _check_sample_weight
 from scipy.stats import pearsonr
 from sklearn.metrics import explained_variance_score
 
-pearsonr_vec = np.vectorize(pearsonr, signature='(n),(n)->(),()')
+pearsonr_vec = np.vectorize(pearsonr, signature="(n),(n)->(),()")
+
 
 def pearson_r_score(y_true, y_pred, multioutput=None):
     y_true_ = y_true.transpose()
     y_pred_ = y_pred.transpose()
-    return(pearsonr_vec(y_true_, y_pred_)[0])
+    return pearsonr_vec(y_true_, y_pred_)[0]
+
 
 class _RidgeGCVMod(_RidgeGCV):
     """Ridge regression with built-in Leave-one-out Cross-Validation."""
-    
+
     def __init__(
         self,
         alphas=(0.1, 1.0, 10.0),
         *,
         fit_intercept=True,
-        #normalize="deprecated",
+        # normalize="deprecated",
         scoring=None,
         copy_X=True,
         gcv_mode=None,
-        store_cv_values=False,
+        store_cv_results=False,
         is_clf=False,
         alpha_per_target=False,
     ):
         self.alphas = np.asarray(alphas)
         self.fit_intercept = fit_intercept
-        #self.normalize = normalize
+        # self.normalize = normalize
         self.scoring = scoring
         self.copy_X = copy_X
         self.gcv_mode = gcv_mode
-        self.store_cv_values = store_cv_values
+        self.store_cv_values = store_cv_results
         self.is_clf = is_clf
         self.alpha_per_target = alpha_per_target
 
@@ -77,7 +79,7 @@ class _RidgeGCVMod(_RidgeGCV):
             X,
             y,
             self.fit_intercept,
-            #_normalize,
+            # _normalize,
             self.copy_X,
             sample_weight=sample_weight,
         )
@@ -105,8 +107,10 @@ class _RidgeGCVMod(_RidgeGCV):
 
         X_mean, *decomposition = decompose(X, y, sqrt_sw)
 
-        if self.scoring not in ['pearson_r', 'explained_variance']:
-            raise ValueError("modified RidgeCV scoring requires one of ['pearson_r','explained_variance']")
+        if self.scoring not in ["pearson_r", "explained_variance"]:
+            raise ValueError(
+                "modified RidgeCV scoring requires one of ['pearson_r','explained_variance']"
+            )
 
         n_y = 1 if len(y.shape) == 1 else y.shape[1]
         n_alphas = 1 if np.ndim(self.alphas) == 0 else len(self.alphas)
@@ -122,20 +126,24 @@ class _RidgeGCVMod(_RidgeGCV):
             if self.store_cv_values:
                 self.cv_values_[:, i] = predictions.ravel()
 
-            #identity_estimator = _IdentityRegressor()
+            # identity_estimator = _IdentityRegressor()
             if self.alpha_per_target:
-                if self.scoring == 'pearson_r':
+                if self.scoring == "pearson_r":
                     alpha_score = pearson_r_score(y, predictions)
-                if self.scoring == 'explained_variance':
-                    alpha_score = explained_variance_score(y, predictions, multioutput = 'raw_values') 
+                if self.scoring == "explained_variance":
+                    alpha_score = explained_variance_score(
+                        y, predictions, multioutput="raw_values"
+                    )
             else:
-                if self.scoring == 'pearson_r':
+                if self.scoring == "pearson_r":
                     alpha_score = pearson_r_score(y, predictions).mean()
-                if self.scoring == 'explained_variance':
-                    alpha_score = explained_variance_score(y, predictions, multioutput = 'uniform_average')
+                if self.scoring == "explained_variance":
+                    alpha_score = explained_variance_score(
+                        y, predictions, multioutput="uniform_average"
+                    )
 
             # Keep track of the best model
-            if best_score is None: 
+            if best_score is None:
                 if self.alpha_per_target and n_y > 1:
                     best_coef = c
                     best_score = np.atleast_1d(alpha_score)
@@ -144,7 +152,7 @@ class _RidgeGCVMod(_RidgeGCV):
                     best_coef = c
                     best_score = alpha_score
                     best_alpha = alpha
-            else: 
+            else:
                 if self.alpha_per_target and n_y > 1:
                     to_update = alpha_score > best_score
                     best_coef[:, to_update] = c[:, to_update]
@@ -178,31 +186,35 @@ class _BaseRidgeCVMod(_BaseRidgeCV):
             estimator = _RidgeGCVMod(
                 self.alphas,
                 fit_intercept=self.fit_intercept,
-                #normalize=self.normalize,
+                # normalize=self.normalize,
                 scoring=self.scoring,
                 gcv_mode=self.gcv_mode,
-                store_cv_values=self.store_cv_values,
+                store_cv_results=self.store_cv_results,
                 is_clf=is_classifier(self),
                 alpha_per_target=self.alpha_per_target,
             )
             estimator.fit(X, y, sample_weight=sample_weight)
             self.alpha_ = estimator.alpha_
             self.best_score_ = estimator.best_score_
-            if self.store_cv_values:
-                self.cv_values_ = estimator.cv_values_
+            if self.store_cv_results:
+                self.cv_results_ = estimator.cv_values_
         else:
-            if self.store_cv_values:
-                raise ValueError("cv is not None and store_cv_values=True are incompatible")
+            if self.store_cv_results:
+                raise ValueError(
+                    "cv is not None and store_cv_values=True are incompatible"
+                )
             if self.alpha_per_target:
-                raise ValueError("cv is not None and alpha_per_target=True are incompatible")
-            
+                raise ValueError(
+                    "cv is not None and alpha_per_target=True are incompatible"
+                )
+
             parameters = {"alpha": self.alphas}
             solver = "sparse_cg" if sparse.issparse(X) else "auto"
             model = RidgeClassifier if is_classifier(self) else Ridge
             gs = GridSearchCV(
                 model(
                     fit_intercept=self.fit_intercept,
-                    #normalize=self.normalize,
+                    # normalize=self.normalize,
                     solver=solver,
                 ),
                 parameters,
@@ -225,13 +237,14 @@ class _BaseRidgeCVMod(_BaseRidgeCV):
 
 class RidgeCVMod(MultiOutputMixin, RegressorMixin, _BaseRidgeCVMod):
     """Ridge regression with built-in cross-validation."""
-    
+
+
 if __name__ == "__main__":
     x = np.random.randn(100, 10)
     y = np.random.randn(100, 1)
-    
-    regression = RidgeCVMod(alphas = np.logspace(-3, 3, 100), scoring = 'pearson_r')
+
+    regression = RidgeCVMod(alphas=np.logspace(-3, 3, 100), scoring="pearson_r")
     regression.fit(x, y)
 
-    print('Best score:', regression.best_score_)
-    print('Best alpha:', regression.alpha_)
+    print("Best score:", regression.best_score_)
+    print("Best alpha:", regression.alpha_)
